@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#10121a">
+<title>FileManager · GitHub</title>
+<style>
+:root{color-scheme:dark;--bg:#0d0f15;--panel:#151923;--panel2:#1b2130;--line:#2a3242;--text:#edf1f7;--muted:#9aa6b8;--accent:#8b7cff;--green:#48d7a0;--red:#ff7885;--yellow:#f2c875}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(900px 500px at 8% -15%,#28214a 0,transparent 55%),var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,select{font:inherit}button{cursor:pointer}.wrap{max-width:1180px;margin:auto;padding:26px 20px 60px}
+header{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:28px}.brand{display:flex;align-items:center;gap:12px}.logo{width:43px;height:43px;border-radius:13px;background:linear-gradient(135deg,#9b8cff,#6655ef);display:grid;place-items:center;font-size:23px;box-shadow:0 8px 25px #7865ff44}h1{font-size:22px;margin:0;letter-spacing:-.6px}.subtitle{color:var(--muted);font-size:12px}.status{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;border:1px solid var(--line);border-radius:30px;padding:8px 12px}.dot{width:8px;height:8px;border-radius:50%;background:#758095}.dot.on{background:var(--green);box-shadow:0 0 10px #48d7a088}
+h2{font-size:18px;margin:0}.muted{color:var(--muted)}.small{font-size:12px}.panel{background:linear-gradient(180deg,#191e2a,#141822);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:17px;box-shadow:0 18px 50px #0004}
+.hero{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin:8px 0 20px}.hero h2{font-size:27px;letter-spacing:-.8px}.hero p{color:var(--muted);margin:5px 0 0;font-size:13px}
+.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:10px 14px;border-radius:10px;font-weight:650;transition:.15s}.btn:hover{border-color:#8174f3;transform:translateY(-1px)}.btn.primary{background:linear-gradient(135deg,#8e7eff,#6755ef);border:0;color:white}.btn.danger{background:#3a2029;border-color:#63303b;color:#ff9ca6}.btn.ghost{background:transparent}.btn:disabled{opacity:.42;cursor:not-allowed;transform:none}.btn.sm{padding:7px 10px;font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:17px}.stat{padding:15px 17px;background:#171c27;border:1px solid var(--line);border-radius:13px}.stat strong{display:block;font-size:25px;letter-spacing:-.7px}.stat span{font-size:12px;color:var(--muted)}
+.row{display:flex;align-items:center;gap:10px}.between{justify-content:space-between}.toolbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:15px}input,select{background:#0e121b;border:1px solid #30394b;border-radius:10px;color:var(--text);padding:10px 12px;outline:none;min-width:0}input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px #8b7cff22}.search{flex:1;min-width:190px}.repo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.repo{background:#111620;border:1px solid var(--line);border-radius:13px;padding:15px;min-width:0}.repo-name{font-weight:700;overflow-wrap:anywhere}.repo-desc{font-size:12px;color:var(--muted);min-height:18px;margin:7px 0 12px;overflow-wrap:anywhere}.chip{font-size:11px;border-radius:30px;padding:4px 8px;background:#252d3b;color:#c8d1df}.chip.public{background:#1c352d;color:#8be0b7}.chip.private{background:#3b321f;color:#f0d28d}.repo-bottom{display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid #252c39;padding-top:12px;margin-top:13px}.empty{grid-column:1/-1;text-align:center;padding:38px 15px;border:1px dashed #394253;border-radius:13px;color:var(--muted)}.empty b{display:block;color:var(--text);margin-bottom:4px}
+.notice{display:none;padding:11px 13px;border-radius:10px;margin:0 0 14px;font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}.notice.show{display:block}.notice.ok{background:#173328;border:1px solid #245d45;color:#a4f0ca}.notice.err{background:#3a2028;border:1px solid #693440;color:#ffadb5}.notice.info{background:#202b42;border:1px solid #344d79;color:#bfd2ff}
+#connectPanel{max-width:720px;margin:45px auto}.field{margin:13px 0}.field label{display:block;font-size:12px;color:#cbd3df;font-weight:650;margin-bottom:6px}.field input{width:100%}.hint{font-size:12px;color:var(--muted);margin-top:6px}
+.hidden{display:none!important}.modal-back{position:fixed;inset:0;background:#05070bdc;display:none;align-items:center;justify-content:center;padding:16px;z-index:5}.modal-back.show{display:flex}.modal{width:min(520px,100%);max-height:90vh;overflow:auto;background:#171d29;border:1px solid #343d50;border-radius:17px;padding:20px;box-shadow:0 25px 90px #000a}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.close{border:0;background:#293143;color:#e5eaf2;border-radius:8px;width:32px;height:32px;font-size:19px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.breadcrumb{display:flex;gap:7px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:13px;margin:13px 0}.breadcrumb button{background:none;border:0;color:#bdb4ff;padding:0}.file-list{border:1px solid var(--line);border-radius:12px;overflow:hidden}.file-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid #252c39}.file-item:last-child{border-bottom:0}.file-left{display:flex;align-items:center;gap:10px;min-width:0}.file-label{overflow-wrap:anywhere}.file-sub{font-size:11px;color:var(--muted)}.file-actions{display:flex;gap:6px;flex-shrink:0}.preview{max-width:100%;max-height:55vh;display:block;margin:12px auto;border-radius:10px}.footer{text-align:center;color:#667185;font-size:11px;margin-top:28px}
+@media(max-width:700px){.wrap{padding:18px 13px 40px}.hero{align-items:flex-start;flex-direction:column}.stats{gap:7px}.stat{padding:12px}.stat strong{font-size:21px}.repo-grid{grid-template-columns:1fr}.panel{padding:15px}header{align-items:flex-start}.status{font-size:11px}.repo-bottom{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="brand"><div class="logo">⌘</div><div><h1>FileManager</h1><div class="subtitle">YOUR GITHUB WORKSPACE</div></div></div>
+  <div class="row"><div class="status"><span id="statusDot" class="dot"></span><span id="statusText">Not connected</span></div><button id="disconnectBtn" class="btn sm ghost hidden">Disconnect</button></div>
+</header>
+
+<div id="notice" class="notice"></div>
+
+<section id="connectPanel" class="panel">
+  <div class="row" style="margin-bottom:7px"><span style="font-size:24px">🔐</span><h2>Connect your GitHub account</h2></div>
+  <p class="muted small">Enter a Fine-grained Personal Access Token to load and manage your repositories. The token stays in this page's memory and is not saved to the HTML or browser storage.</p>
+  <div class="field"><label for="tokenInput">Personal Access Token</label><input id="tokenInput" type="password" placeholder="github_pat_..." autocomplete="off" spellcheck="false"></div>
+  <button id="connectBtn" class="btn primary">Connect GitHub</button>
+  <div class="hint">Required token permissions: Repository permissions → Contents (Read and write), Administration (Read and write), Metadata (Read-only). Grant access to the repositories you want to manage.</div>
+  <div class="notice info show" style="margin-top:15px">Security: use this only on a trusted device. Anyone who can access this open page while connected may be able to use your token. Disconnect when finished. Never share your token or publish it in source code.</div>
+</section>
+
+<main id="app" class="hidden">
+  <div class="hero"><div><h2>My Repositories</h2><p>Manage all your GitHub repositories in one place.</p></div><button id="newRepoBtn" class="btn primary">＋ New Repository</button></div>
+  <div class="stats">
+    <div class="stat"><strong id="totalCount">—</strong><span>Total repositories</span></div>
+    <div class="stat"><strong id="publicCount">—</strong><span>Public</span></div>
+    <div class="stat"><strong id="privateCount">—</strong><span>Private</span></div>
+  </div>
+  <section class="panel">
+    <div class="toolbar">
+      <input id="searchInput" class="search" placeholder="Search repositories..." aria-label="Search repositories">
+      <select id="visibilityFilter" aria-label="Filter repositories"><option value="all">All repositories</option><option value="public">Public</option><option value="private">Private</option></select>
+      <button id="refreshBtn" class="btn">↻ Refresh</button>
+    </div>
+    <div id="repoGrid" class="repo-grid"><div class="empty"><b>Loading repositories…</b>Please wait.</div></div>
+  </section>
+</main>
+
+<section id="filesPanel" class="panel hidden">
+  <div class="row between"><div><div class="subtitle">REPOSITORY</div><h2 id="fileRepoTitle">Repository</h2></div><button id="backBtn" class="btn">← Repositories</button></div>
+  <div id="fileRepoMeta" class="muted small" style="margin-top:5px"></div>
+  <div class="toolbar" style="margin-top:18px">
+    <button id="uploadBtn" class="btn primary">↑ Upload files</button>
+    <button id="newFolderBtn" class="btn">＋ New folder</button>
+    <button id="reloadFilesBtn" class="btn">↻ Refresh</button>
+    <input id="filePicker" type="file" multiple class="hidden" accept="image/*,.pdf,.txt,.csv,.xlsx,.docx,.zip">
+  </div>
+  <div id="breadcrumbs" class="breadcrumb"></div>
+  <div id="fileList" class="file-list"><div class="empty">Loading files…</div></div>
+  <p class="hint">Uploads are committed directly to the selected repository's default branch. Large files may exceed GitHub's API limits.</p>
+</section>
+<div class="footer">FileManager · A personal GitHub repository dashboard</div>
+</div>
+
+<div id="modalBack" class="modal-back">
+  <div class="modal">
+    <div class="modal-head"><h2 id="modalTitle">New repository</h2><button class="close" id="modalClose" aria-label="Close">×</button></div>
+    <div id="modalBody"></div><div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const API = "https://api.github.com";
+  const $ = id => document.getElementById(id);
+  let token = "";
+  let username = "";
+  let repositories = [];
+  let currentRepo = null;
+  let currentPath = "";
+  let currentBranch = "";
+  let currentFiles = [];
+
+  function notice(message, type="info") {
+    const el=$("notice"); el.textContent=message; el.className="notice show "+type;
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+  function clearNotice(){ $("notice").className="notice"; $("notice").textContent=""; }
+  function setConnected(yes) {
+    $("statusDot").classList.toggle("on",yes);
+    $("statusText").textContent=yes ? username : "Not connected";
+    $("disconnectBtn").classList.toggle("hidden",!yes);
+    $("connectPanel").classList.toggle("hidden",yes);
+    $("app").classList.toggle("hidden",!yes);
+  }
+  async function api(path, options={}) {
+    const response=await fetch(API+path,{
+      ...options,
+      headers:{
+        "Accept":"application/vnd.github+json",
+        "Authorization":"Bearer "+token,
+        "X-GitHub-Api-Version":"2022-11-28",
+        ...(options.body?{"Content-Type":"application/json"}:{}),
+        ...(options.headers||{})
+      }
+    });
+    let data={}; const raw=await response.text();
+    try{data=raw?JSON.parse(raw):{}}catch{data={message:raw||"Unknown response"}}
+    if(!response.ok) {
+      let msg=data.message||("GitHub API error "+response.status);
+      if(response.status===401) msg="Token is invalid or expired. Disconnect and enter a valid token.";
+      if(response.status===403) msg+=" Check your token permissions and repository access.";
+      if(response.status===404) msg+=" The resource may not exist or your token may not have access.";
+      throw new Error(msg);
+    }
+    return data;
+  }
+  async function connect() {
+    const candidate=$("tokenInput").value.trim();
+    if(!candidate){notice("Please enter your GitHub token.", "err");return;}
+    token=candidate; $("connectBtn").disabled=true; $("connectBtn").textContent="Connecting…"; clearNotice();
+    try{
+      const user=await api("/user"); username=user.login;
+      setConnected(true); $("tokenInput").value="";
+      await loadRepositories();
+      notice("Connected as @"+username+". Your token is held in page memory only.", "ok");
+    }catch(e){token="";username="";setConnected(false);notice(e.message,"err");}
+    finally{$("connectBtn").disabled=false;$("connectBtn").textContent="Connect GitHub";}
+  }
+  function disconnect(){
+    token="";username="";repositories=[];currentRepo=null;currentFiles=[];
+    $("repoGrid").innerHTML="";$("filesPanel").classList.add("hidden");$("searchInput").value="";
+    setConnected(false);clearNotice();notice("Disconnected. Your token has been cleared from page memory.","info");
+  }
+  async function loadRepositories(){
+    $("repoGrid").innerHTML='<div class="empty"><b>Loading repositories…</b>Please wait.</div>';
+    try{
+      let all=[],page=1,items;
+      do{
+        items=await api(`/user/repos?per_page=100&page=${page}&sort=updated&direction=desc&affiliation=owner,collaborator,organization_member`);
+        all=all.concat(items);page++;
+      }while(items.length===100 && page<=10);
+      repositories=all;
+      renderRepositories();
+    }catch(e){$("repoGrid").innerHTML='<div class="empty"><b>Could not load repositories</b>'+escapeHtml(e.message)+'</div>';notice(e.message,"err");}
+  }
+  function renderRepositories(){
+    const q=$("searchInput").value.trim().toLowerCase(), filter=$("visibilityFilter").value;
+    $("totalCount").textContent=repositories.length;
+    $("publicCount").textContent=repositories.filter(r=>!r.private).length;
+    $("privateCount").textContent=repositories.filter(r=>r.private).length;
+    const list=repositories.filter(r=>(filter==="all"||(filter==="private"?r.private:!r.private))&&
+      (r.full_name.toLowerCase().includes(q)||(r.description||"").toLowerCase().includes(q)));
+    if(!list.length){$("repoGrid").innerHTML='<div class="empty"><b>No repositories found</b>Try another search or create a repository.</div>';return;}
+    $("repoGrid").innerHTML=list.map(r=>`
+      <article class="repo">
+        <div class="row between"><div class="repo-name">${escapeHtml(r.name)}</div><span class="chip ${r.private?"private":"public"}">${r.private?"Private":"Public"}</span></div>
+        <div class="repo-desc">${escapeHtml(r.description||"No description provided.")}</div>
+        <div class="row"><span class="chip">${escapeHtml(r.language||"No language")}</span><span class="chip">⑂ ${r.forks_count} forks</span></div>
+        <div class="repo-bottom"><span class="muted small">Updated ${formatDate(r.updated_at)}</span><button class="btn sm" data-open="${escapeAttr(r.full_name)}">Open →</button></div>
+      </article>`).join("");
+    $("repoGrid").querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",()=>openRepository(b.dataset.open)));
+  }
+  function openModal(title,body,actions){
+    $("modalTitle").textContent=title;$("modalBody").innerHTML=body;$("modalActions").innerHTML="";
+    actions.forEach(a=>{const b=document.createElement("button");b.className="btn "+(a.primary?"primary":"");b.textContent=a.label;b.addEventListener("click",a.click);$("modalActions").appendChild(b);});
+    $("modalBack").classList.add("show");
+  }
+  function closeModal(){$("modalBack").classList.remove("show");}
+  function createRepository(){
+    openModal("Create repository",`
+      <div class="field"><label for="newName">Repository name</label><input id="newName" placeholder="my-new-repository" maxlength="100"></div>
+      <div class="field"><label for="newDesc">Description (optional)</label><input id="newDesc" placeholder="What is this repository for?"></div>
+      <div class="field"><label for="newVisibility">Visibility</label><select id="newVisibility"><option value="private">Private</option><option value="public">Public</option></select></div>
+      <div class="hint">The repository will be created empty (no README, license, or .gitignore) so it can qualify for the empty-only deletion rule.</div>`,
+      [{label:"Cancel",click:closeModal},{label:"Create repository",primary:true,click:async()=>{
+        const name=$("newName").value.trim(),description=$("newDesc").value.trim(),isPrivate=$("newVisibility").value==="private";
+        if(!name){notice("Enter a repository name.","err");return;}
+        const btn=[...$("modalActions").children].find(x=>x.textContent==="Create repository");btn.disabled=true;btn.textContent="Creating…";
+        try{
+          await api("/user/repos",{method:"POST",body:JSON.stringify({name,description,private:isPrivate,auto_init:false})});
+          closeModal();notice("Repository created: "+name,"ok");await loadRepositories();
+        }catch(e){notice(e.message,"err");btn.disabled=false;btn.textContent="Create repository";}
+      }}]);
+  }
+  async function openRepository(fullName){
+    const repo=repositories.find(r=>r.full_name===fullName);if(!repo)return;
+    currentRepo=repo;currentPath="";currentBranch=repo.default_branch||"";
+    $("filesPanel").classList.remove("hidden");$("app").classList.add("hidden");
+    $("fileRepoTitle").textContent=repo.name;
+    $("fileRepoMeta").textContent=(repo.private?"Private":"Public")+" · "+repo.full_name+" · Default branch: "+(currentBranch||"not set");
+    await loadFiles();
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+  async function loadFiles(){
+    $("fileList").innerHTML='<div class="empty">Loading files…</div>';
+    renderBreadcrumbs();
+    try{
+      if(!currentBranch){
+        $("fileList").innerHTML='<div class="empty"><b>This repository is empty</b>Upload a file to create its first commit.</div>';return;
+      }
+      const path=currentPath?"/"+currentPath:"";
+      const data=await api(`/repos/${currentRepo.full_name}/contents${path}?ref=${encodeURIComponent(currentBranch)}`);
+      currentFiles=Array.isArray(data)?data:[data];
+      renderFiles();
+    }catch(e){
+      if(e.message.includes("404")){
+        currentFiles=[];$("fileList").innerHTML='<div class="empty"><b>This repository is empty</b>Upload a file to create its first commit.</div>';
+      }else{$("fileList").innerHTML='<div class="empty"><b>Could not load files</b>'+escapeHtml(e.message)+'</div>';}
+    }
+  }
+  function renderBreadcrumbs(){
+    const parts=currentPath?currentPath.split("/"):[];
+    let html='<button data-crumb="">root</button>';
+    let built="";
+    parts.forEach(p=>{built+=(built?"/":"")+p;html+=' <span>/</span> <button data-crumb="'+escapeAttr(built)+'">'+escapeHtml(p)+'</button>';});
+    $("breadcrumbs").innerHTML=html;
+    $("breadcrumbs").querySelectorAll("[data-crumb]").forEach(b=>b.addEventListener("click",()=>{currentPath=b.dataset.crumb;loadFiles();}));
+  }
+  function renderFiles(){
+    if(!currentFiles.length){$("fileList").innerHTML='<div class="empty"><b>This folder is empty</b>Upload files or create a folder.</div>';return;}
+    const sorted=currentFiles.slice().sort((a,b)=>(a.type==="dir"?0:1)-(b.type==="dir"?0:1)||a.name.localeCompare(b.name));
+    $("fileList").innerHTML=sorted.map(f=>{
+      const icon=f.type==="dir"?"📁":isImage(f.name)?"🖼️":"📄";
+      return `<div class="file-item"><div class="file-left"><span>${icon}</span><div class="file-label">${f.type==="dir"?`<button class="file-open" data-path="${escapeAttr(f.path)}">${escapeHtml(f.name)}</button>`:escapeHtml(f.name)}<div class="file-sub">${f.type==="dir"?"Folder":formatBytes(f.size||0)}</div></div></div><div class="file-actions">${f.type==="file"&&isImage(f.name)?`<button class="btn sm" data-preview="${escapeAttr(f.download_url||"")}">Preview</button>`:""}${f.type==="file"?`<a class="btn sm" href="${escapeAttr(f.download_url||f.html_url)}" target="_blank" rel="noopener">View</a>`:""}</div></div>`;
+    }).join("");
+    $("fileList").querySelectorAll(".file-open").forEach(b=>b.addEventListener("click",()=>{currentPath=b.dataset.path;loadFiles();}));
+    $("fileList").querySelectorAll("[data-preview]").forEach(b=>b.addEventListener("click",()=>previewImage(b.dataset.preview)));
+  }
+  function previewImage(url){
+    if(!url)return;
+    openModal("Image preview",`<img class="preview" src="${escapeAttr(url)}" alt="Repository image preview">`,[{label:"Close",click:closeModal},{label:"Open image",primary:true,click:()=>window.open(url,"_blank","noopener")}]);
+  }
+  function isImage(name){return /\.(png|jpe?g|gif|webp|bmp|svg|avif)$/i.test(name);}
+  function uploadFiles(){ $("filePicker").click(); }
+  async function handleUpload(files){
+    if(!files||!files.length)return;
+    const branch=currentBranch;
+    if(!branch){notice("This repository has no default branch yet. Uploading its first file will create the initial branch/commit through GitHub's Contents API; if GitHub rejects it, create the first file on GitHub and retry.","info");}
+    let done=0;
+    for(const file of files){
+      if(file.size>25*1024*1024){notice(file.name+" is larger than 25 MB. GitHub's Contents API is not suitable for this file size; skipped.","err");continue;}
+      try{
+        const base64=await fileToBase64(file);
+        const path=(currentPath?currentPath+"/":"")+file.name;
+        let sha;
+        try{const existing=await api(`/repos/${currentRepo.full_name}/contents/${encodePath(path)}?ref=${encodeURIComponent(branch)}`);sha=existing.sha;}catch(e){if(!e.message.includes("404"))throw e;}
+        const payload={message:(sha?"Update ":"Upload ")+path,content:base64,branch:branch||undefined};
+        if(sha)payload.sha=sha;
+        await api(`/repos/${currentRepo.full_name}/contents/${encodePath(path)}`,{method:"PUT",body:JSON.stringify(payload)});
+        done++;
+      }catch(e){notice("Upload failed for "+file.name+": "+e.message,"err");}
+    }
+    $("filePicker").value="";
+    if(done){notice("Uploaded "+done+" file(s) successfully.","ok");await loadFiles();}
+  }
+  function fileToBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(",")[1]);reader.onerror=()=>reject(new Error("Could not read file."));reader.readAsDataURL(file);});}
+  function encodePath(path){return path.split("/").map(encodeURIComponent).join("/");}
+  function createFolder(){
+    openModal("Create folder",`<div class="field"><label for="folderName">Folder name</label><input id="folderName" placeholder="images"></div><div class="hint">Git does not store empty folders. A small .gitkeep file will be added inside the folder.</div>`,
+      [{label:"Cancel",click:closeModal},{label:"Create folder",primary:true,click:async()=>{
+        const name=$("folderName").value.trim().replace(/^\/+|\/+$/g,"");
+        if(!name||name.includes("/")||name==="."||name===".."){notice("Enter a valid single folder name.","err");return;}
+        try{
+          const path=(currentPath?currentPath+"/":"")+name+"/.gitkeep";
+          await api(`/repos/${currentRepo.full_name}/contents/${encodePath(path)}`,{method:"PUT",body:JSON.stringify({message:"Create folder "+name,content:btoa("Folder placeholder") ,branch:currentBranch||undefined})});
+          closeModal();notice("Folder created: "+name,"ok");await loadFiles();
+        }catch(e){notice(e.message,"err");}
+      }}]);
+  }
+  async function backToRepos(){
+    $("filesPanel").classList.add("hidden");$("app").classList.remove("hidden");currentRepo=null;currentPath="";window.scrollTo({top:0,behavior:"smooth"});
+  }
+  // Deletion guard: check every branch's complete recursive Git tree. GitHub API
+  // reports tree entries for files, symlinks and submodules; any entry blocks deletion.
+  async function isRepositoryEmpty(repo){
+    // Fetch every branch, not just the first page.
+    let branches=[], page=1, batch;
+    do {
+      batch=await api(`/repos/${repo.full_name}/branches?per_page=100&page=${page}`);
+      branches=branches.concat(batch); page++;
+    } while(batch.length===100);
+    if(branches.length===0)return true;
+    for(const branch of branches){
+      // The Trees API expects a tree SHA, so resolve the branch's commit first.
+      const commit=await api(`/repos/${repo.full_name}/git/commits/${encodeURIComponent(branch.commit.sha)}`);
+      const tree=await api(`/repos/${repo.full_name}/git/trees/${encodeURIComponent(commit.tree.sha)}?recursive=1`);
+      // If GitHub truncates a very large tree, fail closed and do not delete.
+      if((tree.tree||[]).length>0 || tree.truncated) return false;
+    }
+    return true;
+  }
+  async function deleteRepository(repo){
+    openModal("Delete repository?",`<p>You're asking to delete <b>${escapeHtml(repo.full_name)}</b>.</p><p class="muted small">FileManager will first inspect every branch. Deletion is allowed only if every branch has no tree entries. This action cannot be undone.</p><div class="notice info show">Repositories containing any file, folder placeholder, symlink, or submodule will be protected.</div>`,
+      [{label:"Cancel",click:closeModal},{label:"Check and delete",primary:true,click:async()=>{
+        const btn=[...$("modalActions").children].find(x=>x.textContent==="Check and delete");btn.disabled=true;btn.textContent="Checking…";
+        try{
+          const empty=await isRepositoryEmpty(repo);
+          if(!empty){closeModal();notice("Deletion blocked: this repository contains files or other Git tree entries in at least one branch.","err");return;}
+          btn.textContent="Deleting…";
+          await api(`/repos/${repo.full_name}`,{method:"DELETE"});
+          closeModal();notice("Empty repository deleted: "+repo.full_name,"ok");await loadRepositories();
+        }catch(e){notice("Could not delete repository: "+e.message,"err");btn.disabled=false;btn.textContent="Check and delete";}
+      }}]);
+  }
+  function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+  function escapeAttr(s){return escapeHtml(s).replace(/`/g,"&#96;");}
+  function formatDate(s){if(!s)return"—";return new Date(s).toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"});}
+  function formatBytes(n){if(!n)return"0 B";const u=["B","KB","MB","GB"];let i=0;while(n>=1024&&i<u.length-1){n/=1024;i++;}return n.toFixed(i?1:0)+" "+u[i];}
+
+  $("connectBtn").addEventListener("click",connect);
+  $("tokenInput").addEventListener("keydown",e=>{if(e.key==="Enter")connect();});
+  $("disconnectBtn").addEventListener("click",disconnect);
+  $("newRepoBtn").addEventListener("click",createRepository);
+  $("refreshBtn").addEventListener("click",loadRepositories);
+  $("searchInput").addEventListener("input",renderRepositories);
+  $("visibilityFilter").addEventListener("change",renderRepositories);
+  $("backBtn").addEventListener("click",backToRepos);
+  $("uploadBtn").addEventListener("click",uploadFiles);
+  $("filePicker").addEventListener("change",e=>handleUpload(e.target.files));
+  $("reloadFilesBtn").addEventListener("click",loadFiles);
+  $("newFolderBtn").addEventListener("click",createFolder);
+  $("modalClose").addEventListener("click",closeModal);
+  $("modalBack").addEventListener("click",e=>{if(e.target===$("modalBack"))closeModal();});
+  // Delete controls are intentionally only shown for a repository when requested from its card.
+  // A user must explicitly choose Delete, then pass the server-side API tree check.
+  const repoGrid=$("repoGrid");
+  const observer=new MutationObserver(()=>{
+    repoGrid.querySelectorAll(".repo").forEach(card=>{
+      if(card.querySelector("[data-delete]"))return;
+      const name=card.querySelector(".repo-name")?.textContent;
+      const repo=repositories.find(r=>r.name===name);
+      if(!repo)return;
+      const actions=card.querySelector(".repo-bottom");
+      const del=document.createElement("button");del.className="btn sm danger";del.textContent="Delete";del.setAttribute("data-delete","1");
+      del.addEventListener("click",()=>deleteRepository(repo));actions.appendChild(del);
+    });
+  });
+  observer.observe(repoGrid,{childList:true,subtree:true});
+})();
+</script>
+</body>
+</html>
