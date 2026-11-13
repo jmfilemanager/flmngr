@@ -19,7 +19,7 @@ h2{font-size:18px;margin:0}.muted{color:var(--muted)}.small{font-size:12px}.pane
 #connectPanel{max-width:720px;margin:45px auto}.field{margin:13px 0}.field label{display:block;font-size:12px;color:#cbd3df;font-weight:650;margin-bottom:6px}.field input{width:100%}.hint{font-size:12px;color:var(--muted);margin-top:6px}
 .hidden{display:none!important}.modal-back{position:fixed;inset:0;background:#05070bdc;display:none;align-items:center;justify-content:center;padding:16px;z-index:5}.modal-back.show{display:flex}.modal{width:min(520px,100%);max-height:90vh;overflow:auto;background:#171d29;border:1px solid #343d50;border-radius:17px;padding:20px;box-shadow:0 25px 90px #000a}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.close{border:0;background:#293143;color:#e5eaf2;border-radius:8px;width:32px;height:32px;font-size:19px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
 .breadcrumb{display:flex;gap:7px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:13px;margin:13px 0}.breadcrumb button{background:none;border:0;color:#bdb4ff;padding:0}.file-list{border:1px solid var(--line);border-radius:12px;overflow:hidden}.file-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid #252c39}.file-item:last-child{border-bottom:0}.file-left{display:flex;align-items:center;gap:10px;min-width:0}.file-label{overflow-wrap:anywhere}.file-sub{font-size:11px;color:var(--muted)}.file-actions{display:flex;gap:6px;flex-shrink:0}.preview{max-width:100%;max-height:55vh;display:block;margin:12px auto;border-radius:10px}.footer{text-align:center;color:#667185;font-size:11px;margin-top:28px}
-@media(max-width:700px){.wrap{padding:18px 13px 40px}.hero{align-items:flex-start;flex-direction:column}.stats{gap:7px}.stat{padding:12px}.stat strong{font-size:21px}.repo-grid{grid-template-columns:1fr}.panel{padding:15px}header{align-items:flex-start}.status{font-size:11px}.repo-bottom{align-items:flex-start;flex-direction:column}}
+@media(max-width:700px){.wrap{padding:18px 13px 40px}.hero{align-items:flex-start;flex-direction:column}.stats{gap:7px}.stat{padding:12px}.stat strong{font-size:21px}.repo-grid{grid-template-columns:1fr}.panel{padding:15px}header{align-items:flex-start}.status{font-size:11px}.repo-bottom{align-items:flex-start;flex-direction:column}.file-item{align-items:flex-start;flex-direction:column}.file-actions{width:100%}.file-actions .btn{flex:1}.file-thumb.medium{width:72px;height:72px}}
 </style>
 </head>
 <body>
@@ -64,6 +64,7 @@ h2{font-size:18px;margin:0}.muted{color:var(--muted)}.small{font-size:12px}.pane
     <button id="uploadBtn" class="btn primary">↑ Upload files</button>
     <button id="newFolderBtn" class="btn">＋ New folder</button>
     <button id="reloadFilesBtn" class="btn">↻ Refresh</button>
+    <select id="fileViewMode" aria-label="File display mode"><option value="name">Name only</option><option value="small">Small preview</option><option value="medium">Medium preview</option></select>
     <input id="filePicker" type="file" multiple class="hidden" accept="image/*,.pdf,.txt,.csv,.xlsx,.docx,.zip">
   </div>
   <div id="breadcrumbs" class="breadcrumb"></div>
@@ -233,17 +234,52 @@ h2{font-size:18px;margin:0}.muted{color:var(--muted)}.small{font-size:12px}.pane
   }
   function renderFiles(){
     if(!currentFiles.length){$("fileList").innerHTML='<div class="empty"><b>This folder is empty</b>Upload files or create a folder.</div>';return;}
+    const mode=$("fileViewMode").value;
     const sorted=currentFiles.slice().sort((a,b)=>(a.type==="dir"?0:1)-(b.type==="dir"?0:1)||a.name.localeCompare(b.name));
     $("fileList").innerHTML=sorted.map(f=>{
       const icon=f.type==="dir"?"📁":isImage(f.name)?"🖼️":"📄";
-      return `<div class="file-item"><div class="file-left"><span>${icon}</span><div class="file-label">${f.type==="dir"?`<button class="file-open" data-path="${escapeAttr(f.path)}">${escapeHtml(f.name)}</button>`:escapeHtml(f.name)}<div class="file-sub">${f.type==="dir"?"Folder":formatBytes(f.size||0)}</div></div></div><div class="file-actions">${f.type==="file"&&isImage(f.name)?`<button class="btn sm" data-preview="${escapeAttr(f.download_url||"")}">Preview</button>`:""}${f.type==="file"?`<a class="btn sm" href="${escapeAttr(f.download_url||f.html_url)}" target="_blank" rel="noopener">View</a>`:""}</div></div>`;
+      const thumb=(mode!=="name"&&f.type==="file"&&isImage(f.name)&&f.download_url)?`<img class="file-thumb ${mode}" src="${escapeAttr(f.download_url)}" alt="" loading="lazy">`:"";
+      const title=f.type==="dir"?`<button class="file-open" data-path="${escapeAttr(f.path)}">${escapeHtml(f.name)}</button>`:`<span class="file-label">${escapeHtml(f.name)}</span>`;
+      return `<div class="file-item ${thumb?"with-thumb":""}"><div class="file-left">${thumb}<span class="file-icon">${icon}</span><div class="file-label">${title}<div class="file-sub">${f.type==="dir"?"Folder":formatBytes(f.size||0)}</div></div></div><div class="file-actions">${f.type==="file"?`<button class="btn sm" data-preview="${escapeAttr(f.path)}">Preview</button><button class="btn sm" data-move="${escapeAttr(f.path)}">Move</button><button class="btn sm danger" data-delete-file="${escapeAttr(f.path)}">Delete</button>`:""}</div></div>`;
     }).join("");
     $("fileList").querySelectorAll(".file-open").forEach(b=>b.addEventListener("click",()=>{currentPath=b.dataset.path;loadFiles();}));
-    $("fileList").querySelectorAll("[data-preview]").forEach(b=>b.addEventListener("click",()=>previewImage(b.dataset.preview)));
+    $("fileList").querySelectorAll("[data-preview]").forEach(b=>b.addEventListener("click",()=>previewFile(b.dataset.preview)));
+    $("fileList").querySelectorAll("[data-move]").forEach(b=>b.addEventListener("click",()=>moveFile(b.dataset.move)));
+    $("fileList").querySelectorAll("[data-delete-file]").forEach(b=>b.addEventListener("click",()=>deleteFile(b.dataset.deleteFile)));
   }
-  function previewImage(url){
-    if(!url)return;
-    openModal("Image preview",`<img class="preview" src="${escapeAttr(url)}" alt="Repository image preview">`,[{label:"Close",click:closeModal},{label:"Open image",primary:true,click:()=>window.open(url,"_blank","noopener")}]);
+  async function previewFile(path){
+    const file=currentFiles.find(f=>f.path===path);if(!file)return;
+    if(isImage(file.name)){openModal("Preview · "+file.name,`<img class="preview" src="${escapeAttr(file.download_url||"")}" alt="${escapeAttr(file.name)}">`,[{label:"Close",click:closeModal}]);return;}
+    if(/\.(txt|csv|json|md|log|xml|html|css|js)$/i.test(file.name)){
+      try{const response=await fetch(file.download_url,{headers:{"Authorization":"Bearer "+token,"Accept":"application/vnd.github.raw+json"}});if(!response.ok)throw new Error("Preview request failed (HTTP "+response.status+").");const content=await response.text();openModal("Preview · "+file.name,`<pre class="text-preview">${escapeHtml(content.slice(0,30000))}${content.length>30000?"\\n\\n… preview truncated":""}</pre>`,[{label:"Close",click:closeModal}]);}
+      catch(e){notice("Could not preview "+file.name+": "+e.message,"err");}return;
+    }
+    openModal("Preview · "+file.name,`<p class="muted">Preview is not available for this file type. File size: ${formatBytes(file.size||0)}.</p>`,[{label:"Close",click:closeModal}]);
+  }
+  function moveFile(path){
+    const file=currentFiles.find(f=>f.path===path);if(!file)return;
+    openModal("Move file",`<p class="muted small">Move <b>${escapeHtml(file.name)}</b> to another folder in this repository.</p><div class="field"><label for="moveDestination">Destination folder path</label><input id="moveDestination" placeholder="images/2026 (leave blank for root)" value="${escapeAttr(currentPath)}"></div><div class="hint">Enter a folder path relative to the repository root. The destination folder must already exist.</div>`,[
+      {label:"Cancel",click:closeModal},{label:"Move file",primary:true,click:async()=>{
+        const destination=$("moveDestination").value.trim().replace(/^\/+|\/+$/g,"");
+        if(destination.split("/").some(part=>!part||part==="."||part==="..")){notice("Enter a valid destination folder path.","err");return;}
+        const newPath=(destination?destination+"/":"")+file.name;if(newPath===file.path){closeModal();return;}
+        try{
+          const head=await api(`/repos/${currentRepo.full_name}/git/ref/heads/${encodeURIComponent(currentBranch)}`);
+          const commit=await api(`/repos/${currentRepo.full_name}/git/commits/${head.object.sha}`);
+          const tree=await api(`/repos/${currentRepo.full_name}/git/trees`,{method:"POST",body:JSON.stringify({base_tree:commit.tree.sha,tree:[{path:newPath,mode:"100644",type:"blob",sha:file.sha},{path:file.path,mode:"100644",type:"blob",sha:null}]})});
+          const newCommit=await api(`/repos/${currentRepo.full_name}/git/commits`,{method:"POST",body:JSON.stringify({message:`Move ${file.path} to ${newPath}`,tree:tree.sha,parents:[head.object.sha]})});
+          await api(`/repos/${currentRepo.full_name}/git/refs/heads/${encodeURIComponent(currentBranch)}`,{method:"PATCH",body:JSON.stringify({sha:newCommit.sha})});
+          closeModal();notice("Moved "+file.name+" successfully.","ok");await loadFiles();
+        }catch(e){notice("Move failed: "+e.message,"err");}
+      }}]);
+  }
+  function deleteFile(path){
+    const file=currentFiles.find(f=>f.path===path);if(!file)return;
+    openModal("Delete file?",`<p>Delete <b>${escapeHtml(file.path)}</b> from this repository?</p><p class="muted small">This creates a commit on the default branch and cannot be undone through FileManager.</p>`,[
+      {label:"Cancel",click:closeModal},{label:"Delete file",primary:true,click:async()=>{
+        try{await api(`/repos/${currentRepo.full_name}/contents/${encodePath(file.path)}`,{method:"DELETE",body:JSON.stringify({message:"Delete "+file.path,sha:file.sha,branch:currentBranch})});closeModal();notice("Deleted "+file.name+".","ok");await loadFiles();}
+        catch(e){notice("Delete failed: "+e.message,"err");}
+      }}]);
   }
   function isImage(name){return /\.(png|jpe?g|gif|webp|bmp|svg|avif)$/i.test(name);}
   function uploadFiles(){ $("filePicker").click(); }
@@ -333,6 +369,7 @@ h2{font-size:18px;margin:0}.muted{color:var(--muted)}.small{font-size:12px}.pane
   $("uploadBtn").addEventListener("click",uploadFiles);
   $("filePicker").addEventListener("change",e=>handleUpload(e.target.files));
   $("reloadFilesBtn").addEventListener("click",loadFiles);
+  $("fileViewMode").addEventListener("change",renderFiles);
   $("newFolderBtn").addEventListener("click",createFolder);
   $("modalClose").addEventListener("click",closeModal);
   $("modalBack").addEventListener("click",e=>{if(e.target===$("modalBack"))closeModal();});
